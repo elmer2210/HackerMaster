@@ -14,3 +14,13 @@ def create_app():
     app.register_blueprint(main_bp)
 
     return app
+
+# ============================================
+# Archivo: __init__.py
+# Propósito: Crear y configurar la aplicación Flask.
+# Este archivo expone una función `create_app()` que:
+#   - Instancia la aplicación Flask
+#   - Configura la carpeta de templates y archivos estáticos
+#   - Registra los blueprints (rutas) definidos en otros módulos
+# Este archivo es llamado desde run.py para lanzar el servidor.
+# ============================================

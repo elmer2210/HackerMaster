@@ -21,3 +21,16 @@ def instructions():
 @main_bp.route('/credits')
 def credits():
     return render_template('credits.html')
+
+# ============================================
+# Archivo: app.py
+# Propósito: Definir las rutas principales del sistema.
+# Este archivo contiene:
+#   - Rutas para las vistas HTML (index, play, metrics, etc.)
+#   - Ruta '/evaluar' que recibe los datos del jugador y su respuesta
+#   - Llama a:
+#       - players.py para gestionar al jugador
+#       - validator.py para validar la respuesta
+#       - storage.py para actualizar los datos en el archivo JSON
+# Este módulo funciona como el "cerebro" que orquesta los demás módulos.
+# ============================================
