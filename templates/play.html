@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>CODEBREAKER - Acceso de Agente</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="terminal">
+    <h1 class="title">💻 CODEBREAKER</h1>
+    <p class="sistema">Sistema de acceso a la red encriptada</p>
+
+    <!-- Pantalla de inicio -->
+    <div id="inicio">
+      <label for="playerName">🧑 Ingresar nombre de agente:</label><br>
+      <input type="text" id="playerName" placeholder="Agente X"><br><br>
+      <button onclick="iniciarJuego()">Iniciar misión</button>
+      <button onclick="window.location.href='/'">Regresar al menu</button>
+    </div>
+
+    <!-- Consola del juego -->
+    <div id="juego" style="display:none;">
+      <h2>📜 Reto:</h2>
+      <pre id="enunciado"></pre>
+
+      <label for="respuesta">🧠 Escribe tu código o respuesta:</label><br>
+      <textarea id="respuesta" rows="5" cols="80" placeholder="Ej: print('Hola Mundo')"></textarea><br>
+
+      <button onclick="enviarRespuesta()">Ejecutar</button>
+      <pre id="salida"></pre>
+    </div>
+  </div>
+
+  <script>
+    let nivelActual = 1;
+    let jugador = "";
+
+    function iniciarJuego() {
+      const nombre = document.getElementById("playerName").value.trim();
+      if (!nombre) {
+        alert("Por favor, ingresa tu nombre.");
+        return;
+      }
+      jugador = nombre;
+      document.getElementById("inicio").style.display = "none";
+      document.getElementById("juego").style.display = "block";
+      cargarEnunciado(nivelActual);
+    }
+
+    function cargarEnunciado(nivel) {
+      const enunciados = {
+        1: "Has interceptado un mensaje cifrado. Las letras en mayúscula forman una clave secreta.\nEntrada: \"aBcdEfgHijK\"",
+        2: "Completa la secuencia: 2, 4, 8, __, 32",
+        3: "¿Es 'reconocer' un palíndromo?",
+        4: "Cifra César: Descifra 'Krod' si el desplazamiento fue de 3 letras",
+        5: "Suma los dígitos pares del número: 482713",
+        6: "Imprime los primeros 6 números de Fibonacci usando recursividad"
+      };
+      document.getElementById("enunciado").textContent = enunciados[nivel] || "No hay más retos.";
+    }
+
+    function enviarRespuesta() {
+      const respuesta = document.getElementById("respuesta").value.trim();
+      if (!respuesta) {
+        document.getElementById("salida").textContent = "⚠️ Debes ingresar una respuesta.";
+        return;
+      }
+
+      fetch("/evaluar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre: jugador,
+          nivel: nivelActual,
+          respuesta: respuesta
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("salida").textContent = data.mensaje;
+        if (data.correcto) {
+          nivelActual += 1;
+          cargarEnunciado(nivelActual);
+          document.getElementById("respuesta").value = "";
+        }
+      })
+      .catch(() => {
+        document.getElementById("salida").textContent = "❌ Error de conexión con el servidor.";
+      });
+    }
+  </script>
+</body>
+</html>
