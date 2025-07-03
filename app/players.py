@@ -59,3 +59,11 @@ def load_players_from_data(data: List[dict]):
     for d in data:
         player = Player(**d)
         players_list.append(player)
+
+def reset_player(player):
+    """Reinicia los datos del jugador sin cambiar su nombre."""
+    player.current_level = 1
+    player.attempts = 0
+    player.correct_attempts = 0
+    player.incorrect_attempts = 0
+    player.score_per_level = []

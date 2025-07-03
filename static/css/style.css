@@ -38,3 +38,20 @@ pre {
   font-size: 2em;
   margin-bottom: 20px;
 }
+
+.box {
+  border: 2px solid lime;
+  padding: 30px;
+  display: inline-block;
+  margin-top: 50px;
+}
+
+a {
+  color: cyan;
+  text-decoration: none;
+  display: block;
+  margin-top: 20px;
+}
+a:hover {
+    color: white;
+}

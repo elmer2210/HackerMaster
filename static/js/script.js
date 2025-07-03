@@ -1,49 +1,81 @@
-// Nivel actual (esto se puede cargar dinámicamente desde el backend)
+
+let playerName = "";
 let nivelActual = 1;
 
 document.addEventListener("DOMContentLoaded", () => {
-  cargarEnunciado(nivelActual);
+  document.getElementById("startBtn").addEventListener("click", iniciarJuego);
+  document.getElementById("sendBtn").addEventListener("click", enviarRespuesta);
 });
 
-function cargarEnunciado(nivel) {
-  const enunciados = {
-    1: "Has interceptado un mensaje cifrado. Las letras en mayúscula forman una clave secreta.\nEntrada: \"aBcdEfgHijK\"",
-    2: "Completa la secuencia: 2, 4, 8, __, 32",
-    3: "¿Es 'reconocer' un palíndromo?",
-    4: "Cifra César: Descifra 'Krod' si el desplazamiento fue de 3 letras",
-    5: "Suma los dígitos pares del número: 482713",
-    6: "Imprime los primeros 6 números de Fibonacci usando recursividad"
-  };
+function iniciarJuego() {
+  playerName = document.getElementById("playerName").value.trim();
 
-  document.getElementById("enunciado").textContent = enunciados[nivel] || "No hay más retos.";
-}
-
-function enviarRespuesta() {
-  const nombre = document.getElementById("playerName").value.trim();
-  const respuesta = document.getElementById("respuesta").value.trim();
-
-  if (!nombre || !respuesta) {
-    document.getElementById("salida").textContent = "⚠️ Debes ingresar tu nombre y una respuesta.";
+  if (!playerName) {
+    alert("⚠️ Debes ingresar tu nombre para comenzar.");
     return;
   }
 
-  fetch("/evaluar", {
+  // Oculta formulario de inicio y muestra el juego
+  document.getElementById("inicio").style.display = "none";
+  document.getElementById("consola").style.display = "block";
+
+  cargarRetoDesdeBackend();
+}
+
+function cargarRetoDesdeBackend() {
+  fetch("/get_challenge", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: playerName })
+  })
+  .then(res => res.json())
+  .then(data => {
+    nivelActual = data.level;
+    document.getElementById("nivel").textContent = `Nivel ${data.level}`;
+    document.getElementById("enunciado").textContent = data.challenge;
+    document.getElementById("pista").textContent = `💡 ${data.hint}`;
+    document.getElementById("salida").textContent = "";
+    document.getElementById("respuesta").value = "";
+  });
+}
+
+function enviarRespuesta() {
+  const respuesta = document.getElementById("respuesta").value.trim();
+
+  if (!respuesta) {
+    document.getElementById("salida").textContent = "⚠️ Ingresa una respuesta.";
+    return;
+  }
+
+  fetch("/evaluate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      nombre: nombre,
-      nivel: nivelActual,
-      respuesta: respuesta
+      name: playerName,
+      answer: respuesta
     })
   })
   .then(res => res.json())
   .then(data => {
-    document.getElementById("salida").textContent = data.mensaje;
+    if (data.finished) {
+      window.location.href = data.redirect_url;
+      return;
+    }
 
-    if (data.correcto) {
-      nivelActual += 1;
-      cargarEnunciado(nivelActual);
+    document.getElementById("salida").textContent = data.is_correct
+      ? "✅ Correcto. Cargando siguiente nivel..."
+      : "❌ Incorrecto. Intenta otra vez.";
+
+    if (data.is_correct) {
+      // Cargar el siguiente reto desde el backend
       document.getElementById("respuesta").value = "";
+      setTimeout(() => {
+        document.getElementById("salida").textContent = "";
+        document.getElementById("pista").textContent = "";
+        document.getElementById("nivel").textContent = `Nivel ${data.next_level}`;
+        document.getElementById("enunciado").textContent = data.challenge;
+        document.getElementById("pista").textContent = `💡 ${data.hint}`;
+      }, 1200);
     }
   })
   .catch(() => {

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>CODEBREAKER - Acceso de Agente</title>
   <link rel="stylesheet" href="/static/css/style.css">
+  <script src="/static/js/game.js"></script>
 </head>
 <body>
   <div class="terminal">
@@ -20,20 +21,26 @@
 
     <!-- Consola del juego -->
     <div id="juego" style="display:none;">
+      <h2 id="nivel"></h2>
       <h2>📜 Reto:</h2>
-      <pre id="enunciado"></pre>
+      <pre id="reto"></pre>
+      <p id="pista" style="color:lime;"></p>
 
       <label for="respuesta">🧠 Escribe tu código o respuesta:</label><br>
       <textarea id="respuesta" rows="5" cols="80" placeholder="Ej: print('Hola Mundo')"></textarea><br>
 
       <button onclick="enviarRespuesta()">Ejecutar</button>
+      <button onclick="reiniciarJuego()">🔁 Reiniciar Juego</button>
       <pre id="salida"></pre>
     </div>
   </div>
-
   <script>
-    let nivelActual = 1;
     let jugador = "";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("inicio").style.display = "block";
+      document.getElementById("juego").style.display = "none";
+    });
 
     function iniciarJuego() {
       const nombre = document.getElementById("playerName").value.trim();
@@ -41,53 +48,97 @@
         alert("Por favor, ingresa tu nombre.");
         return;
       }
+
       jugador = nombre;
+
       document.getElementById("inicio").style.display = "none";
       document.getElementById("juego").style.display = "block";
-      cargarEnunciado(nivelActual);
+      cargarRetoActual();
     }
 
-    function cargarEnunciado(nivel) {
-      const enunciados = {
-        1: "Has interceptado un mensaje cifrado. Las letras en mayúscula forman una clave secreta.\nEntrada: \"aBcdEfgHijK\"",
-        2: "Completa la secuencia: 2, 4, 8, __, 32",
-        3: "¿Es 'reconocer' un palíndromo?",
-        4: "Cifra César: Descifra 'Krod' si el desplazamiento fue de 3 letras",
-        5: "Suma los dígitos pares del número: 482713",
-        6: "Imprime los primeros 6 números de Fibonacci usando recursividad"
-      };
-      document.getElementById("enunciado").textContent = enunciados[nivel] || "No hay más retos.";
+    function cargarRetoActual() {
+      fetch('/get_challenge', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name: jugador })
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('nivel').innerText = `Nivel ${data.level}`;
+        document.getElementById('reto').innerText = data.challenge;
+        document.getElementById('pista').innerText = `💡 ${data.hint}`;
+        document.getElementById('salida').textContent = "";
+        document.getElementById('respuesta').value = "";
+      })
+      .catch(error => {
+        document.getElementById("salida").textContent = "❌ Error al cargar el reto.";
+        console.error('Error al cargar el reto:', error);
+      });
     }
 
     function enviarRespuesta() {
       const respuesta = document.getElementById("respuesta").value.trim();
+
       if (!respuesta) {
         document.getElementById("salida").textContent = "⚠️ Debes ingresar una respuesta.";
         return;
       }
 
-      fetch("/evaluar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      fetch('/evaluate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
-          nombre: jugador,
-          nivel: nivelActual,
-          respuesta: respuesta
+          name: jugador,
+          answer: respuesta
         })
       })
       .then(res => res.json())
       .then(data => {
-        document.getElementById("salida").textContent = data.mensaje;
-        if (data.correcto) {
-          nivelActual += 1;
-          cargarEnunciado(nivelActual);
-          document.getElementById("respuesta").value = "";
+        if (data.finished) {
+          window.location.href = data.redirect_url;
+          return;
+        }
+
+        document.getElementById("salida").textContent = data.is_correct
+          ? "✅ Correcto. Cargando siguiente nivel..."
+          : "❌ Incorrecto. Intenta otra vez.";
+
+        if (data.is_correct) {
+          setTimeout(() => {
+            cargarRetoActual();
+          }, 1500);
         }
       })
       .catch(() => {
         document.getElementById("salida").textContent = "❌ Error de conexión con el servidor.";
       });
     }
+
+    function reiniciarJuego() {
+      fetch('/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: jugador })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert(data.message);
+          document.getElementById('nivel').innerText = `Nivel ${data.level}`;
+          document.getElementById('reto').innerText = data.challenge;
+          document.getElementById('pista').innerText = `💡 ${data.hint}`;
+          document.getElementById('respuesta').value = "";
+          document.getElementById('salida').textContent = "";
+        } else {
+          alert(data.message);
+        }
+      });
+    }
   </script>
+
 </body>
 </html>
