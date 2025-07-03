@@ -1,4 +1,8 @@
 from flask import Blueprint, render_template
+from app.storage import save_players_to_json
+from app.players import get_player, update_player
+from app.levels import TOTAL_LEVELS  # o define tú el número total (ej: 6)
+
 
 main_bp = Blueprint('main', __name__)
 
@@ -21,6 +25,41 @@ def instructions():
 @main_bp.route('/credits')
 def credits():
     return render_template('credits.html')
+
+@main_bp.route('/evaluate', methods=['POST'])
+def evaluate():
+    data = request.get_json()
+    name = data.get("name")
+    user_answer = data.get("answer")
+
+    player = get_player(name)
+    level = player.current_level
+
+    # Aquí llamas a tu lógica para obtener el reto correcto
+    correct_output = get_expected_output(level)
+    is_correct = validate_answer(user_answer, correct_output)
+
+    # Actualizar jugador
+    update_player(player, is_correct, points=10 if is_correct else 5)
+
+    # Verificar si terminó todos los niveles
+    if player.current_level > TOTAL_LEVELS:
+        save_players_to_json()  # ← ¡GUARDAMOS LOS DATOS!
+
+        return jsonify({
+            "finished": True,
+            "message": "🎉 ¡Has completado todos los retos! Tus datos han sido guardados.",
+            "is_correct": is_correct
+        })
+
+    # Si no terminó, seguir jugando
+    return jsonify({
+        "finished": False,
+        "is_correct": is_correct,
+        "next_level": player.current_level
+    })
+
+
 
 # ============================================
 # Archivo: app.py

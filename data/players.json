@@ -1,0 +1,13 @@
+[
+    {
+        "name": "Neo",
+        "current_level": 2,
+        "score_per_level": [
+            10,
+            -5
+        ],
+        "attempts": 2,
+        "correct_attempts": 1,
+        "incorrect_attempts": 1
+    }
+]
