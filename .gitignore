@@ -21,9 +21,6 @@ __pycache__/
 *.env
 .env.*
 
-# Archivos de bases de datos o almacenamiento
-data/players.json
-data/results.csv
 
 # Configuraciones de VS Code u otros editores
 .vscode/

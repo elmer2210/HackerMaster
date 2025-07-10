@@ -1,10 +1,11 @@
 # app/app.py
 
 from flask import Blueprint, render_template, request, jsonify
-from app.storage import save_players_to_json
-from app.players import get_player, update_player, reset_player
-from app.levels import TOTAL_LEVELS, get_expected_output, get_hint, get_challenge
-from app.validator import validate_answer
+from .storage import save_players_to_json
+from .players import get_player, update_player, reset_player, create_player, get_all_players
+from .levels import get_next_challenge_for_player, get_challenge_by_id, get_expected_output
+from .validator import validate_answer
+import ast 
 
 main_bp = Blueprint('main', __name__)
 
@@ -28,49 +29,99 @@ def instructions():
 def credits():
     return render_template('credits.html')
 
-@main_bp.route('/evaluate', methods=['POST'])
+@main_bp.route("/evaluate", methods=["POST"])
 def evaluate():
     data = request.get_json()
     name = data.get("name")
     user_answer = data.get("answer")
 
     player = get_player(name)
-    level = player.current_level
 
-    correct_output = get_expected_output(level)
-    is_correct = validate_answer(user_answer, correct_output)
+    if not player or not player.current_challenge:
+        return jsonify({"error": "Jugador no válido o sin reto asignado"}), 400
 
-    update_player(player, is_correct, points=10 if is_correct else 5)
+    # Obtener el reto actual del jugador por ID
+    challenge_id = player.current_challenge["id"]
+    challenge = get_challenge_by_id(challenge_id)
+    print(f"Evaluando reto: {challenge['expected_output']}")
 
-    if player.current_level > TOTAL_LEVELS:
-        save_players_to_json()
-        return jsonify({
-            "finished": True,
-            "redirect_url": "/game_over"
-        })
-    # Si no terminó, enviar siguiente reto y pista
-    return jsonify({
-        "finished": False,
-        "is_correct": is_correct,
-        "next_level": player.current_level,
-        "challenge": get_challenge(player.current_level),
-        "hint": get_hint(player.current_level)
-    })
+    # Validar la respuesta del jugador
+    result = validate_answer(user_answer, challenge, user_code=user_answer)
+
+    # Actualizar jugador
+    update_player(player, is_correct=result["success"], points=10, challenge_id=challenge["id"])
+
+    response = {
+        "is_correct": result["success"],
+        "output": result["output"]
+    }
+
+    # Si fue correcto, pasar al siguiente reto
+    if result["success"]:
+        next_challenge = get_next_challenge_for_player(player)
+        if next_challenge:
+            player.current_challenge = next_challenge
+            response.update({
+                "finished": False,
+                "next_level": player.current_level,
+                "challenge": next_challenge["challenge"],
+                "hint": next_challenge["hint"],
+                "message": challenge["success_message"]
+            })
+        else:
+            # Completó los retos del nivel actual
+            player.current_level += 1
+
+            if player.current_level > TOTAL_LEVELS:
+                save_players_to_json()
+                response.update({
+                    "finished": True,
+                    "message": "🎉 ¡Misión completada con éxito!"
+                })
+            else:
+                new_challenge = get_next_challenge_for_player(player)
+                player.current_challenge = new_challenge
+                response.update({
+                    "finished": False,
+                    "next_level": player.current_level,
+                    "challenge": new_challenge["challenge"],
+                    "hint": new_challenge["hint"],
+                    "message": f"✅ ¡Nivel {player.current_level} desbloqueado!"
+                })
+    else:
+        response["message"] = challenge["error_message"]
+
+    return jsonify(response)
+
 
 
 @main_bp.route('/get_challenge', methods=['POST'])
-def get_challenge_data():
+def get_challenge():
     data = request.get_json()
     name = data.get("name")
 
+    if not name:
+        return jsonify({"error": "Nombre no proporcionado"}), 400
+
     player = get_player(name)
-    level = player.current_level
+    if not player:
+        player = create_player(name)
+
+    challenge = get_next_challenge_for_player(player)
+
+    if not challenge:
+        return jsonify({
+            "error": "No hay más retos disponibles en este nivel.",
+            "level": player.current_level
+        }), 404
 
     return jsonify({
-        "level": level,
-        "challenge": get_challenge(level),
-        "hint": get_hint(level)
+        "level": player.current_level,
+        "challenge": challenge["challenge"],
+        "hint": challenge["hint"]
     })
+
+
 
 @main_bp.route('/reset', methods=['POST'])
 def reset():

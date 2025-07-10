@@ -1,0 +1,134 @@
+[
+  {
+    "id":1,
+    "level": 1,
+    "title": "Ping sospechoso",
+    "challenge": "Interceptaste 3 paquetes de prueba con tiempos: 45, 32 y 18. Suma total en `ping_total`.",
+    "expected_output": "95",
+    "hint": "Suma simple de enteros.",
+    "type": "number",
+    "success_message": "✅ Has triangulado el nodo enemigo.",
+    "error_message": "❌ Verifica los valores del ping interceptado."
+  },
+  {
+    "id":2,
+    "level": 1,
+    "title": "Secuencia binaria",
+    "challenge": "Completa la secuencia: 2, 4, 8, 16, __. Guarda en `puerto_siguiente`.",
+    "expected_output": "32",
+    "hint": "Cada número es el doble del anterior.",
+    "type": "number",
+    "success_message": "✅ Acceso al puerto encontrado.",
+    "error_message": "❌ Error en la secuencia, revisa el patrón."
+  },
+  {
+    "id":3,
+    "level": 1,
+    "title": "Seguridad inversa",
+    "challenge": "El firewall oculta su clave en orden inverso. La palabra original es 'proxy'. Guarda la palabra invertida en `clave_invertida`.",
+    "expected_output": "yxorp",
+    "hint": "Usa slicing con pasos negativos.",
+    "type": "string",
+    "success_message": "✅ Has desencriptado la entrada al servidor.",
+    "error_message": "❌ La inversión no coincide, intenta otra vez."
+  },
+  {
+    "id":4,
+    "level": 1,
+    "title": "Captura de paquetes ASCII",
+    "challenge": "El mensaje 'HACK' fue interceptado. Extrae los códigos ASCII en una lista `paquete`.",
+    "expected_output": "[72, 65, 67, 75]",
+    "hint": "Utiliza `ord()` dentro de un bucle.",
+    "type": "list",
+    "success_message": "✅ Los paquetes han sido desencriptados.",
+    "error_message": "❌ Revisa el uso de ord()."
+  },
+  {
+    "id":5,
+    "level": 2,
+    "title": "Palabra espejo",
+    "challenge": "El mensaje cifrado es 'reconocer'. ¿Es un palíndromo? Guarda el resultado booleano en `es_valido`.",
+    "expected_output": "True",
+    "hint": "Compara la palabra consigo misma al revés.",
+    "type": "palindrome",
+    "success_message": "✅ La simetría reveló el acceso.",
+    "error_message": "❌ Revisa cómo invertir la palabra."
+  },
+  {
+    "id":6,
+    "level": 2,
+    "title": "Fibonacci codificado",
+    "challenge": "Imprime los primeros 6 números de Fibonacci en la lista `fibo`.",
+    "expected_output": "[0, 1, 1, 2, 3, 5]",
+    "hint": "Empieza desde 0 y 1, suma los dos anteriores.",
+    "type": "list",
+    "success_message": "✅ La clave genética ha sido restaurada.",
+    "error_message": "❌ Verifica la secuencia y el bucle."
+  },
+  {
+    "id":7,
+    "level": 2,
+    "title": "Clave binaria",
+    "challenge": "Convierte el número 25 a binario y guárdalo como string en `clave_binaria`.",
+    "expected_output": "0b11001",
+    "hint": "Usa la función `bin()`.",
+    "type": "string",
+    "success_message": "✅ Convertido exitosamente a binario.",
+    "error_message": "❌ bin() devuelve una cadena con prefijo '0b'."
+  },
+  {
+    "id":8,
+    "level": 2,
+    "title": "Hexadecimal del núcleo",
+    "challenge": "Convierte 255 a hexadecimal y guárdalo en `id_hex`.",
+    "expected_output": "0xff",
+    "hint": "Aplica la función `hex()`.",
+    "type": "string",
+    "success_message": "✅ Acceso al núcleo hexadecimal concedido.",
+    "error_message": "❌ Asegúrate de usar hex()."
+  },
+  {
+    "id":9,
+    "level": 3,
+    "title": "Mayúsculas de acceso",
+    "challenge": "Extrae las mayúsculas de 'aBcdEfgHijK' en una lista `clave`.",
+    "expected_output": "['B', 'E', 'H', 'K']",
+    "hint": "Recorre la cadena y filtra con isupper().",
+    "type": "list",
+    "success_message": "✅ Clave detectada correctamente.",
+    "error_message": "❌ Solo las letras en mayúscula forman la clave."
+  },
+  {
+    "id":10,
+    "level": 3,
+    "title": "Detección de intrusos",
+    "challenge": "Extrae los pares de [13, 22, 17, 28, 31, 16] en la lista `sospechosos`.",
+    "expected_output": "[22, 28, 16]",
+    "hint": "Utiliza condicionales y % 2 == 0.",
+    "type": "list",
+    "success_message": "✅ Intrusos rastreados con éxito.",
+    "error_message": "❌ Revisa la condición para números pares."
+  },
+  {
+    "id":11,
+    "level": 3,
+    "title": "Log del sistema",
+    "challenge": "Genera una lista de tuplas (letra, código) para cada letra en 'Hack'. Guarda en `log`.",
+    "expected_output": "[('H', 72), ('a', 97), ('c', 99), ('k', 107)]",
+    "hint": "Combina bucle y ord().",
+    "type": "list",
+    "success_message": "✅ Log leído correctamente.",
+    "error_message": "❌ Tuplas o valores incorrectos."
+  },
+  {
+    "id":12,
+    "level": 3,
+    "title": "Repetición sospechosa",
+    "challenge": "Crea una lista llamada `alertas` con la palabra 'ALERTA' repetida 5 veces.",
+    "expected_output": "['ALERTA', 'ALERTA', 'ALERTA', 'ALERTA', 'ALERTA']",
+    "hint": "Multiplica una lista por un número.",
+    "type": "list",
+    "success_message": "✅ Patrón de ataque detectado.",
+    "error_message": "❌ Usa ['ALERTA'] * 5 para repetir."
+  }
+]

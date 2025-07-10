@@ -1,5 +1,6 @@
-from dataclasses import dataclass, asdict
-from typing import List, Optional
+from dataclasses import dataclass, asdict, field
+from typing import List, Optional, Dict
+from .levels import get_next_challenge_for_player, get_challenge_by_id
 
 # Lista en memoria que mantiene todos los jugadores activos
 players_list: List['Player'] = []
@@ -9,19 +10,31 @@ players_list: List['Player'] = []
 class Player:
     name: str                            # Nombre del jugador
     current_level: int = 1               # Nivel actual del juego
-    score_per_level: List[int] = None   # Puntajes por nivel
+    score_per_level: List[int] = field(default_factory=list)   # Puntajes por nivel
     attempts: int = 0                    # Número de intentos realizados
     correct_attempts: int = 0           # Número de intentos correctos
     incorrect_attempts: int = 0         # Número de intentos incorrectos
+    solved_challenges: List[int] = field(default_factory=list) # ← Lista de retos resueltos por el jugador
+    current_challenge: Optional[Dict] = None
 
     def __post_init__(self):
         if self.score_per_level is None:
             self.score_per_level = []
+        if self.solved_challenges is None:
+            self.solved_challenges = []
 
 # Crea un nuevo jugador y lo añade a la lista en memoria
 def create_player(name: str) -> Player:
     name = name.strip()
+
     new_player = Player(name=name)
+
+    # Obtener primer reto automáticamente
+    first_challenge = get_next_challenge_for_player(new_player)
+    new_player.current_challenge = first_challenge
+    new_player.current_level = 1
+    new_player.solved_challenges = []
+
     players_list.append(new_player)
     return new_player
 
@@ -34,13 +47,26 @@ def get_player(name: str) -> Optional[Player]:
     return None
 
 # Actualiza los datos del jugador tras un intento
-def update_player(player: Player, is_correct: bool, points: int):
+def update_player(player: Player, is_correct: bool, challenge_id: int, points: int = 10):
     player.attempts += 1
 
     if is_correct:
         player.correct_attempts += 1
-        player.score_per_level.append(points)
-        player.current_level += 1
+
+        if challenge_id not in player.solved_challenges:
+            player.solved_challenges.append(challenge_id)
+            player.score_per_level.append(points)
+
+        # Verificar si resolvió 2 retos del nivel actual
+        retos_resueltos_en_nivel = [
+            cid for cid in player.solved_challenges
+            if get_challenge_by_id(cid)["level"] == player.current_level
+        ]
+
+        if len(retos_resueltos_en_nivel) >= 2:
+            player.current_level += 1
+            player.current_challenge = None  # Se asignará nuevo en el siguiente reto
+
     else:
         player.incorrect_attempts += 1
         player.score_per_level.append(-abs(points))

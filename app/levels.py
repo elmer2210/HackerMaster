@@ -1,55 +1,46 @@
-# app/levels.py
+import json
+import random
 
-TOTAL_LEVELS = 6
+# Ruta al archivo JSON con los retos
+CHALLENGES_PATH = "data/challenges.json"
 
-# Diccionario con los retos del juego
-RETO_POR_NIVEL = {
-    1: {
-        "enunciado": "¿Cuál es el resultado de 3 + 5 * 2?",
-        "entrada": None,
-        "salida": "13",
-        "pista": "Primero las multiplicaciones… el orden importa."
-    },
-    2: {
-        "enunciado": "Invierte la palabra: 'anagrama'",
-        "entrada": "anagrama",
-        "salida": "amargana",
-        "pista": "Lee desde el final hasta el principio."
-    },
-    3: {
-        "enunciado": "Convierte el número binario 1011 a decimal.",
-        "entrada": "1011",
-        "salida": "11",
-        "pista": "Potencias de 2: 1x8 + 0x4 + 1x2 + 1x1"
-    },
-    4: {
-        "enunciado": "¿Cuántas letras tiene la palabra 'inteligencia'?",
-        "entrada": "inteligencia",
-        "salida": "12",
-        "pista": "Cuenta cuidadosamente, no te comas ninguna letra."
-    },
-    5: {
-        "enunciado": "Evalúa: (4**2 - 6) / 2",
-        "entrada": None,
-        "salida": "5.0",
-        "pista": "Potencias antes que la resta. ¿Paréntesis incluidos?"
-    },
-    6: {
-        "enunciado": "Codifica 'hola' en ASCII (suma los valores de cada letra)",
-        "entrada": "hola",
-        "salida": "421",
-        "pista": "h=104, o=111, l=108, a=98. Súmalos todos."
-    }
-}
+# Constantes
+TOTAL_LEVELS = 3           # Niveles: 1 = fácil, 2 = medio, 3 = difícil
+CHALLENGES_PER_LEVEL = 2   # Se deben resolver 2 retos por nivel
 
-def get_challenge(level: int) -> str:
-    """Devuelve el enunciado del reto para el nivel dado."""
-    return RETO_POR_NIVEL.get(level, {}).get("enunciado", "Nivel no disponible.")
+# Cargar todos los retos desde el archivo
+with open(CHALLENGES_PATH, "r", encoding="utf-8") as file:
+    ALL_CHALLENGES = json.load(file)
 
-def get_expected_output(level: int) -> str:
-    """Devuelve la respuesta correcta para el nivel dado."""
-    return RETO_POR_NIVEL.get(level, {}).get("salida", "")
 
-def get_hint(level: int) -> str:
-    """Devuelve una pista críptica para el nivel dado."""
-    return RETO_POR_NIVEL.get(level, {}).get("pista", "Sin pista. Usa tu lógica.")
+# Devuelve todos los retos disponibles para un nivel específico
+def get_challenges_by_level(level: int):
+    return [c for c in ALL_CHALLENGES if c["level"] == level]
+
+
+# Devuelve un reto aleatorio que el jugador no haya resuelto aún en el nivel actual
+def get_next_challenge_for_player(player):
+    current_level = player.current_level
+    resolved_ids = getattr(player, "solved_challenges", [])
+
+    disponibles = [
+        c for c in get_challenges_by_level(current_level)
+        if c["id"] not in resolved_ids
+    ]
+
+    if not disponibles:
+        return None  # Ya resolvió todos los retos del nivel
+
+    return random.choice(disponibles)
+
+
+# Devuelve la salida esperada de un reto (como texto limpio)
+def get_expected_output(challenge: dict) -> str:
+    return challenge.get("expected_output", "").strip()
+
+# Busca un reto por su ID único
+def get_challenge_by_id(challenge_id: int) -> dict:
+    for challenge in ALL_CHALLENGES:
+        if challenge["id"] == challenge_id:
+            return challenge
+    raise ValueError(f"❌ No se encontró el reto con ID {challenge_id}")

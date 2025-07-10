@@ -18,7 +18,6 @@ def create_app():
     # Cargar jugadores desde el archivo JSON al iniciar el servidor
     load_players_from_json()
 
-
     return app
 
 # ============================================
