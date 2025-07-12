@@ -3,11 +3,13 @@
 from flask import Blueprint, render_template, request, jsonify
 from .storage import save_players_to_json
 from .players import get_player, update_player, reset_player, create_player, get_all_players
-from .levels import get_next_challenge_for_player, get_challenge_by_id, get_expected_output
+from .levels import get_next_challenge_for_player, get_challenge_by_id, get_expected_output, TOTAL_LEVELS
 from .validator import validate_answer
+from .metrics import load_players, format_metrics_output
 import ast 
 
 main_bp = Blueprint('main', __name__)
+metrics_bp = Blueprint('metrics_bp', __name__)
 
 @main_bp.route('/')
 def menu():
@@ -19,7 +21,9 @@ def play():
 
 @main_bp.route('/metrics')
 def metrics():
-    return render_template('metrics.html')
+    jugadores = load_players()
+    metrics = format_metrics_output(jugadores)
+    return jsonify(metrics)
 
 @main_bp.route('/instructions')
 def instructions():
@@ -41,12 +45,15 @@ def evaluate():
         return jsonify({"error": "Jugador no válido o sin reto asignado"}), 400
 
     # Obtener el reto actual del jugador por ID
-    challenge_id = player.current_challenge["id"]
-    challenge = get_challenge_by_id(challenge_id)
-    print(f"Evaluando reto: {challenge['expected_output']}")
+    challenge = player.current_challenge
+    
 
     # Validar la respuesta del jugador
-    result = validate_answer(user_answer, challenge, user_code=user_answer)
+    expected_output = get_expected_output(challenge)
+    challenge_type = challenge.get("type")
+
+    print(f"{challenge}")
+    result = validate_answer(user_answer, expected_output, challenge_type)
 
     # Actualizar jugador
     update_player(player, is_correct=result["success"], points=10, challenge_id=challenge["id"])
@@ -94,7 +101,6 @@ def evaluate():
     return jsonify(response)
 
 
-
 @main_bp.route('/get_challenge', methods=['POST'])
 def get_challenge():
     data = request.get_json()
@@ -108,6 +114,9 @@ def get_challenge():
         player = create_player(name)
 
     challenge = get_next_challenge_for_player(player)
+    print(f"Evaluando reto: {challenge}")
+
+    player.current_challenge = challenge
 
     if not challenge:
         return jsonify({

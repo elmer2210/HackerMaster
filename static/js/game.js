@@ -40,7 +40,7 @@ function loadChallengeBackend() {
 
       nivelActual = data.level;
       document.getElementById("nivel").textContent = `Nivel ${data.level}`;
-      document.getElementById("enunciado").textContent = data.challenge;
+      document.getElementById("reto").textContent = data.challenge;
       document.getElementById("pista").textContent = `💡 ${data.hint}`;
       document.getElementById("respuesta").value = "";
       document.getElementById("salida").textContent = "";
@@ -51,7 +51,6 @@ function loadChallengeBackend() {
 
 }
 
-// Enviar respuesta al servidor
 function sendResponse() {
   const respuesta = document.getElementById("respuesta").value.trim();
 
@@ -68,31 +67,34 @@ function sendResponse() {
       answer: respuesta
     })
   })
-    .then(res => res.json())
-    .then(data => {
-      if (data.finished) {
-        alert(data.message);
-        window.location.href = data.redirect_url; // Ir a métricas
-        return;
-      }
+  .then(res => res.json())
+  .then(data => {
+    // Mostrar feedback
+    document.getElementById("salida").textContent = data.message;
 
-      // Mostrar feedback
-      document.getElementById("salida").textContent = data.message;
+    if (data.finished) {
+      alert(data.message);
+      // Puedes redirigir a la pantalla de métricas o "game over"
+      window.location.href = data.redirect_url || '/metrics';
+      return;
+    }
 
-      // Si es correcta, limpiar y cargar siguiente reto tras una pausa
-      if (data.is_correct) {
-        setTimeout(() => {
-          document.getElementById("respuesta").value = "";
-          document.getElementById("salida").textContent = "";
-          document.getElementById("pista").textContent = "";
-          cargarRetoDesdeBackend(); // ← NUEVO RETO ALEATORIO
-        }, 1200);
-      }
-    })
-    .catch(() => {
-      document.getElementById("salida").textContent = "❌ Error de conexión con el servidor.";
-    });
+   if (data.is_correct) {
+      setTimeout(() => {
+        document.getElementById("respuesta").value = "";
+        document.getElementById("salida").textContent = "";
+        document.getElementById("pista").textContent = data.hint ? `💡 ${data.hint}` : "";
+        document.getElementById("nivel").innerText = data.next_level ? `Nivel ${data.next_level}` : "";
+        document.getElementById("reto").innerText = data.challenge ? data.challenge : "";
+      }, 1000);
+    }
+    // Si no es correcto, solo se actualiza el mensaje, no el reto/pista/nivel
+  })
+  .catch(() => {
+    document.getElementById("salida").textContent = "❌ Error de conexión con el servidor.";
+  });
 }
+
 
 // Reiniciar juego
 function reloadPlay() {

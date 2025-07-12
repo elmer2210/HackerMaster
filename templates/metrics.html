@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>CODEBREAKER - Metrics</title>
   <link rel="stylesheet" href="/static/css/style.css">
+  <script defer src="/static/js/game.js"></script>
 </head>
 <body>
   <div class="terminal">
@@ -17,26 +18,5 @@
 
     <a href="/">⬅️ Return to Menu</a>
   </div>
-  <script>
-    fetch('/api/metrics')
-      .then(res => res.json())
-      .then(data => {
-        const area = document.getElementById("metrics-output");
-        let output = "";
-
-        data.players.forEach((player, i) => {
-          output += `#${i + 1} ${player.name}\n`;
-          output += `  Levels passed: ${player.levels_passed}\n`;
-          output += `  Total points: ${player.total_score}\n`;
-          output += `  Accuracy: ${player.accuracy}%\n`;
-          output += `\n`;
-        });
-
-        area.textContent = output;
-      })
-      .catch(() => {
-        document.getElementById("metrics-output").textContent = "❌ Failed to load metrics.";
-      });
-  </script>
 </body>
 </html>

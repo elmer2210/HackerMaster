@@ -1,45 +1,49 @@
 import json
 import random
+import ast
 
 # Ruta al archivo JSON con los retos
 CHALLENGES_PATH = "data/challenges.json"
 
 # Constantes
-TOTAL_LEVELS = 3           # Niveles: 1 = fácil, 2 = medio, 3 = difícil
-CHALLENGES_PER_LEVEL = 2   # Se deben resolver 2 retos por nivel
+TOTAL_LEVELS = 3
+CHALLENGES_PER_LEVEL = 2
 
-# Cargar todos los retos desde el archivo
-with open(CHALLENGES_PATH, "r", encoding="utf-8") as file:
-    ALL_CHALLENGES = json.load(file)
+# Abrir el archivo de retos y cargar los datos
+try:
+    with open(CHALLENGES_PATH, "r", encoding="utf-8") as file:
+        ALL_CHALLENGES = json.load(file)
+except FileNotFoundError:
+    raise FileNotFoundError(f"❌ No se encontró el archivo de retos en {CHALLENGES_PATH}")
 
-
-# Devuelve todos los retos disponibles para un nivel específico
+#Funicón que carga los retos por nivel
 def get_challenges_by_level(level: int):
     return [c for c in ALL_CHALLENGES if c["level"] == level]
 
-
-# Devuelve un reto aleatorio que el jugador no haya resuelto aún en el nivel actual
+#Pasar al reto siguiente para el jugador
 def get_next_challenge_for_player(player):
     current_level = player.current_level
     resolved_ids = getattr(player, "solved_challenges", [])
-
-    disponibles = [
-        c for c in get_challenges_by_level(current_level)
-        if c["id"] not in resolved_ids
-    ]
-
+    disponibles = [c for c in get_challenges_by_level(current_level) if c["id"] not in resolved_ids]
     if not disponibles:
-        return None  # Ya resolvió todos los retos del nivel
-
+        return None
     return random.choice(disponibles)
 
+#Obtener la salida esperada del reto
+def get_expected_output(challenge: dict):
+    value = challenge.get("expected_output", "")
+    ctype = challenge.get("type", "")
+    if ctype in ["list", "palindrome"]:  # Solo evalúa estructuras de datos
+        try:
+            return ast.literal_eval(value)
+        except (ValueError, SyntaxError):
+            return value.strip()
+    else:
+        # Para string, number, etc., devuélvelo como texto
+        return value.strip()
 
-# Devuelve la salida esperada de un reto (como texto limpio)
-def get_expected_output(challenge: dict) -> str:
-    return challenge.get("expected_output", "").strip()
-
-# Busca un reto por su ID único
-def get_challenge_by_id(challenge_id: int) -> dict:
+#obtener un reto por ID
+def get_challenge_by_id(challenge_id: int):
     for challenge in ALL_CHALLENGES:
         if challenge["id"] == challenge_id:
             return challenge

@@ -1,9 +1,10 @@
 # app/validator.py
 
-import ast
 import io
 import sys
 from typing import Any
+from .levels import get_expected_output
+from ast import literal_eval
 
 def normalize_answer(value: str) -> Any:
     """
@@ -33,54 +34,49 @@ def safe_exec(code: str) -> str:
     finally:
         sys.stdout = original_stdout
 
-def validate_answer(challenge_type: str, challenge: str, user_code: str) -> dict:
+def validate_answer(user_code: str, expected_output ,challenge_type: str,) -> dict:
     """
     Valida la respuesta del jugador según el tipo de reto.
     Devuelve un diccionario con 'success' y 'output'.
     """
-    print(f"Validando reto: {challenge}")
-    expected_output = challenge['expected_output']
-    challenge_type = challenge['type']
-
     try:
-        # Ambiente seguro para evaluar la respuesta
         local_vars = {}
 
         if challenge_type in ["number", "string", "list", "palindrome"]:
             exec(user_code, {}, local_vars)
-
-            # Extrae la variable principal según el tipo
             key = list(local_vars.keys())[0] if local_vars else None
             output = local_vars.get(key, None)
-            print(f"Salida del código ejecutado: {output} y salida esperada: {expected_output}")
-
+            
+            print(f"Comparando output: '{output}' con esperado: '{expected_output}'")
+            #comparación según el tipo de reto
             if challenge_type == "palindrome":
-                success = str(output) == str(expected_output)
+                #Para palidromos, se espera true o false
+                success = str(output).lower() == str(expected_output).lower()
             elif challenge_type == "list":
-                success = str(output) == expected_output
+                #Compara lista como objetos, no como cadenas
+                try:
+                    output_eval = output if isinstance(output, list) else literal_eval(str(output))
+                    expected_eval = expected_output if isinstance(expected_output, list) else literal_eval(str(expected_output))
+                    success = output_eval == expected_eval
+                except Exception:
+                    success = False
             else:
+                #number o string , convierte a cadena y compara
                 success = str(output).strip() == str(expected_output).strip()
-
             return {
                 "success": success,
                 "output": output
             }
-
         else:
-            # Por defecto: comparar código ejecutado con salida esperada
-            import io
-            import sys
-
-            # Capturar la salida estándar
+            # Para retos tipo "code_output" (comparar output de print)
             stdout_backup = sys.stdout
             sys.stdout = io.StringIO()
-
             exec(user_code, {}, local_vars)
-
             result = sys.stdout.getvalue().strip()
             sys.stdout = stdout_backup
 
-            success = result == expected_output.expected_output.strip()
+            success = result == str(expected_output).strip()
+
             return {
                 "success": success,
                 "output": result
@@ -90,4 +86,6 @@ def validate_answer(challenge_type: str, challenge: str, user_code: str) -> dict
         return {
             "success": False,
             "output": f"Error de ejecución: {e}"
-        }
+        }   
+   
+ 

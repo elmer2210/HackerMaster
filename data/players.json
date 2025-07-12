@@ -8,6 +8,32 @@
         ],
         "attempts": 2,
         "correct_attempts": 1,
-        "incorrect_attempts": 1
+        "incorrect_attempts": 1,
+        "solved_challenges": [],
+        "current_challenge": null
+    },
+    {
+        "name": "007",
+        "current_level": 5,
+        "score_per_level": [
+            10,
+            10,
+            10,
+            10,
+            10,
+            10
+        ],
+        "attempts": 6,
+        "correct_attempts": 6,
+        "incorrect_attempts": 0,
+        "solved_challenges": [
+            4,
+            3,
+            8,
+            5,
+            9,
+            12
+        ],
+        "current_challenge": null
     }
 ]
