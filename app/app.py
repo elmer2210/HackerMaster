@@ -21,9 +21,7 @@ def play():
 
 @main_bp.route('/metrics')
 def metrics():
-    jugadores = load_players()
-    metrics = format_metrics_output(jugadores)
-    return jsonify(metrics)
+    return render_template('metrics.html')
 
 @main_bp.route('/instructions')
 def instructions():
@@ -32,6 +30,10 @@ def instructions():
 @main_bp.route('/credits')
 def credits():
     return render_template('credits.html')
+
+@main_bp.route('/game_over')
+def game_over():
+    return render_template('game_over.html')
 
 @main_bp.route("/evaluate", methods=["POST"])
 def evaluate():
@@ -51,8 +53,6 @@ def evaluate():
     # Validar la respuesta del jugador
     expected_output = get_expected_output(challenge)
     challenge_type = challenge.get("type")
-
-    print(f"{challenge}")
     result = validate_answer(user_answer, expected_output, challenge_type)
 
     # Actualizar jugador
@@ -60,7 +60,10 @@ def evaluate():
 
     response = {
         "is_correct": result["success"],
-        "output": result["output"]
+        "output": result["output"],
+        "attempts": player.attempts,
+        "corret_attempts":player.correct_attempts,
+        "failed_attempts": player.incorrect_attempts,
     }
 
     # Si fue correcto, pasar al siguiente reto
@@ -73,7 +76,9 @@ def evaluate():
                 "next_level": player.current_level,
                 "challenge": next_challenge["challenge"],
                 "hint": next_challenge["hint"],
-                "message": challenge["success_message"]
+                "message": challenge["success_message"],
+                "attempts": player.attempts, 
+                "retos_resueltos": len(player.solved_challenges), 
             })
         else:
             # Completó los retos del nivel actual
@@ -83,18 +88,27 @@ def evaluate():
                 save_players_to_json()
                 response.update({
                     "finished": True,
-                    "message": "🎉 ¡Misión completada con éxito!"
+                    "message": f"¡Misión completada con éxito! Resolviste {len(player.solved_challenges)} retos.",
                 })
+                player.current_challenge = None
+                return jsonify(response)
             else:
                 new_challenge = get_next_challenge_for_player(player)
                 player.current_challenge = new_challenge
                 response.update({
                     "finished": False,
+                    "level_completed": true,
                     "next_level": player.current_level,
                     "challenge": new_challenge["challenge"],
                     "hint": new_challenge["hint"],
-                    "message": f"✅ ¡Nivel {player.current_level} desbloqueado!"
+                    "message": f"¡Nivel {player.current_level} desbloqueado!"
                 })
+                return jsonify(response)
+    if player.attempts <= 0:
+        response.update({
+            "game_over": True,
+            "message": "GAME OVER"
+        })
     else:
         response["message"] = challenge["error_message"]
 
@@ -114,7 +128,6 @@ def get_challenge():
         player = create_player(name)
 
     challenge = get_next_challenge_for_player(player)
-    print(f"Evaluando reto: {challenge}")
 
     player.current_challenge = challenge
 
@@ -126,7 +139,10 @@ def get_challenge():
 
     return jsonify({
         "level": player.current_level,
+        "attempts": player.attempts,
         "challenge": challenge["challenge"],
+        "corret_attempts":player.correct_attempts,
+        "failed_attempts": player.incorrect_attempts,
         "hint": challenge["hint"]
     })
 
@@ -153,6 +169,10 @@ def reset():
             "message": "❌ Jugador no encontrado."
         }), 404
 
-@main_bp.route('/game_over')
-def game_over():
-    return render_template('game_over.html')
+#Carga de métricas
+@main_bp.route('/api/metrics')
+def api_metrics():
+    from .metrics import load_players, format_metrics_output
+    jugadores = load_players()
+    metrics = format_metrics_output(jugadores)
+    return jsonify(metrics)

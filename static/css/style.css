@@ -30,6 +30,7 @@ pre {
   background-color: #111;
   padding: 10px;
   border: 1px dashed #33ff33;
+   max-width: 750px;
 }
 
 .title {
@@ -54,4 +55,47 @@ a {
 }
 a:hover {
     color: white;
+}
+
+/*Espiners de transición*/
+#level-transition {
+  display: flex;
+  transition: opacity 0.5s;
+  opacity: 1;
+}
+
+#level-transition.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cursor {
+  display: inline-block;
+  width: 0.1em;
+  height: 1em;
+  background-color: lime;
+  vertical-align: middle;
+  animation: blink-animation 1s steps(2, start) infinite;
+  -webkit-animation: blink-animation 1s steps(2, start) infinite; /* Para Safari */
+}
+
+@keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}
+
+@-webkit-keyframes blink-animation { /* Para Safari */
+    to {
+    visibility: hidden;
+  }
+}
+
+/* Animación de error de respuesta*/
+.terminal.error-blink {
+  animation: errorBlink 0.4s;
+}
+@keyframes errorBlink {
+  0% { box-shadow: 0 0 20px 2px red; }
+  100% { box-shadow: none; }
 }

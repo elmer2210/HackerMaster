@@ -4,16 +4,17 @@
   <meta charset="UTF-8">
   <title>CODEBREAKER - Acceso de Agente</title>
   <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://kit.fontawesome.com/8c523bb022.js" crossorigin="anonymous"></script>
   <script defer src="/static/js/game.js"></script> <!-- defer para esperar a que cargue todo -->
 </head>
 <body>
   <div class="terminal">
-    <h1 class="title">💻 CODEBREAKER</h1>
+    <h1 class="title"> <i class="fa-solid fa-terminal"></i> HACKERMASTER<span class="cursor"></span></h1>
     <p class="sistema">Sistema de acceso a la red encriptada</p>
 
     <!-- Pantalla de inicio -->
     <div id="inicio">
-      <label for="playerName">🧑 Ingresar nombre de agente:</label><br>
+      <label for="playerName"><i class="fa-solid fa-user-secret"></i> Ingresar nombre de agente:</label><br>
       <input type="text" id="playerName" placeholder="Agente X"><br><br>
       <button id="startBtn">Iniciar misión</button>
       <button onclick="window.location.href='/'">Regresar al menu</button>
@@ -21,18 +22,28 @@
 
     <!-- Consola del juego -->
     <div id="consola" style="display:none;">
+      <h2>Bienvenido, <span id="playerNameDisplay"></span> <i class="fa-solid fa-user-secret"></i></h2>
+      <div id="status-bar">
+        <span id="attempts"><i class="fa-solid fa-heart"></i>: 3</span> |
+        <span id="correct_attempts"><i class="fa-solid fa-web-awesome"></i>: 0</span> |
+        <span id="failed_attempts"><i class="fa-solid fa-skull"></i>: 0</span> 
+      </div>
       <h2 id="nivel"></h2>
-      <h2>📜 Reto:</h2>
+      <h2><i class="fa-solid fa-mask"></i> Reto:</h2>
       <pre id="reto"></pre>
       <p id="pista" style="color:lime;"></p>
 
-      <label for="respuesta">🧠 Escribe tu código o respuesta:</label><br>
+      <label for="respuesta"><i class="fa-solid fa-brain"></i> Escribe tu código o respuesta:</label><br><br>
       <textarea id="respuesta" rows="5" cols="80" placeholder="Ej: print('Hola Mundo')"></textarea><br>
 
       <button id="sendBtn">Ejecutar</button>
       <button id="reloadBtn">🔁 Reiniciar Juego</button>
       <pre id="salida"></pre>
     </div>
+  </div>
+  <!-- Overlay de transición/Loading -->
+  <div id="level-transition" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); color:lime; font-size:2.5em; z-index:9999; align-items:center; justify-content:center; flex-direction:column;">
+    <div id="loading-animation">Cargando siguiente nivel...</div>
   </div>
 </body>
 </html>

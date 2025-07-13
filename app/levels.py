@@ -14,7 +14,7 @@ try:
     with open(CHALLENGES_PATH, "r", encoding="utf-8") as file:
         ALL_CHALLENGES = json.load(file)
 except FileNotFoundError:
-    raise FileNotFoundError(f"❌ No se encontró el archivo de retos en {CHALLENGES_PATH}")
+    raise FileNotFoundError(f" No se encontró el archivo de retos en {CHALLENGES_PATH}")
 
 #Funicón que carga los retos por nivel
 def get_challenges_by_level(level: int):
@@ -47,4 +47,4 @@ def get_challenge_by_id(challenge_id: int):
     for challenge in ALL_CHALLENGES:
         if challenge["id"] == challenge_id:
             return challenge
-    raise ValueError(f"❌ No se encontró el reto con ID {challenge_id}")
+    raise ValueError(f" No se encontró el reto con ID {challenge_id}")

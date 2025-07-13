@@ -11,7 +11,7 @@ class Player:
     name: str                            # Nombre del jugador
     current_level: int = 1               # Nivel actual del juego
     score_per_level: List[int] = field(default_factory=list)   # Puntajes por nivel
-    attempts: int = 0                    # Número de intentos realizados
+    attempts: int = 3                    # Número de intentos realizados
     correct_attempts: int = 0           # Número de intentos correctos
     incorrect_attempts: int = 0         # Número de intentos incorrectos
     solved_challenges: List[int] = field(default_factory=list) # ← Lista de retos resueltos por el jugador
@@ -48,7 +48,6 @@ def get_player(name: str) -> Optional[Player]:
 
 # Actualiza los datos del jugador tras un intento
 def update_player(player: Player, is_correct: bool, challenge_id: int, points: int = 10):
-    player.attempts += 1
 
     if is_correct:
         player.correct_attempts += 1
@@ -68,6 +67,7 @@ def update_player(player: Player, is_correct: bool, challenge_id: int, points: i
             player.current_challenge = None  # Se asignará nuevo en el siguiente reto
 
     else:
+        player.attempts -= 1
         player.incorrect_attempts += 1
         player.score_per_level.append(-abs(points))
 
@@ -89,7 +89,7 @@ def load_players_from_data(data: List[dict]):
 def reset_player(player):
     """Reinicia los datos del jugador sin cambiar su nombre."""
     player.current_level = 1
-    player.attempts = 0
+    player.attempts = 3
     player.correct_attempts = 0
     player.incorrect_attempts = 0
     player.score_per_level = []
