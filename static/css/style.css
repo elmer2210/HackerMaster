@@ -5,14 +5,15 @@ body {
   padding: 20px;
 }
 
-.terminal {
+.terminal { /*Llamamos a una clase del html*/
   border: 2px solid #33ff33;
   padding: 20px;
   max-width: 800px;
   margin: auto;
+  background-color: #111;
 }
 
-input, textarea, button {
+input, textarea, button { /*Llamamos a las etiquetas del html*/
   background-color: #111;
   color: #33ff33;
   border: 1px solid #33ff33;
@@ -58,7 +59,7 @@ a:hover {
 }
 
 /*Espiners de transición*/
-#level-transition {
+#level-transition { /*Llamamos un id del htnl*/
   display: flex;
   transition: opacity 0.5s;
   opacity: 1;
@@ -77,6 +78,41 @@ a:hover {
   vertical-align: middle;
   animation: blink-animation 1s steps(2, start) infinite;
   -webkit-animation: blink-animation 1s steps(2, start) infinite; /* Para Safari */
+}
+
+
+#overlay-nivel, #overlay-gameover  {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;        /* Usar viewport width */
+  height: 100vh;       /* Usar viewport height */
+  background: rgba(9, 95, 9, 0.84);
+  color: lime;
+  font-size: 2.5em;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+}
+#matrix-nivel, #matrix-gameover  {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 1;
+  background: transparent;
+  pointer-events: none;
+}
+#overlay-nivel > div, #overlay-gameover > div {
+  z-index: 2;
+  position: relative;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 @keyframes blink-animation {

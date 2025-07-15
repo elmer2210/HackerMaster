@@ -7,7 +7,6 @@ CHALLENGES_PATH = "data/challenges.json"
 
 # Constantes
 TOTAL_LEVELS = 3
-CHALLENGES_PER_LEVEL = 2
 
 # Abrir el archivo de retos y cargar los datos
 try:

@@ -4,6 +4,7 @@ from .levels import get_next_challenge_for_player, get_challenge_by_id
 
 # Lista en memoria que mantiene todos los jugadores activos
 players_list: List['Player'] = []
+CHALLENGES_PER_LEVEL = 2
 
 # Estructura de datos que representa a un jugador
 @dataclass
@@ -46,8 +47,13 @@ def get_player(name: str) -> Optional[Player]:
             return player
     return None
 
-# Actualiza los datos del jugador tras un intento
-def update_player(player: Player, is_correct: bool, challenge_id: int, points: int = 10):
+def update_player(player: Player, is_correct: bool, challenge_id: int, points: int = 10) -> dict:
+    """
+    Actualiza el estado del jugador según el resultado del reto.
+    Retorna un diccionario indicando si subió de nivel y el nivel actual.
+    """
+    level_up = False
+    prev_level = player.current_level
 
     if is_correct:
         player.correct_attempts += 1
@@ -62,14 +68,23 @@ def update_player(player: Player, is_correct: bool, challenge_id: int, points: i
             if get_challenge_by_id(cid)["level"] == player.current_level
         ]
 
-        if len(retos_resueltos_en_nivel) >= 2:
+        if len(retos_resueltos_en_nivel) >= CHALLENGES_PER_LEVEL:
             player.current_level += 1
             player.current_challenge = None  # Se asignará nuevo en el siguiente reto
+            level_up = True
 
     else:
         player.attempts -= 1
         player.incorrect_attempts += 1
         player.score_per_level.append(-abs(points))
+
+    return {
+        "level_up": level_up,
+        "prev_level": prev_level,
+        "current_level": player.current_level,
+        "attempts": player.attempts,
+        "retos_resueltos": len(player.solved_challenges)
+    }
 
 # Devuelve todos los jugadores activos
 def get_all_players() -> List[Player]:

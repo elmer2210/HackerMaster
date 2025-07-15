@@ -56,61 +56,68 @@ def evaluate():
     result = validate_answer(user_answer, expected_output, challenge_type)
 
     # Actualizar jugador
-    update_player(player, is_correct=result["success"], points=10, challenge_id=challenge["id"])
-
+    player_response=update_player(player, is_correct=result["success"], points=10, challenge_id=challenge["id"])
+    print(player_response)
     response = {
         "is_correct": result["success"],
         "output": result["output"],
         "attempts": player.attempts,
-        "corret_attempts":player.correct_attempts,
+        "correct_attempts":player.correct_attempts,
         "failed_attempts": player.incorrect_attempts,
     }
 
     # Si fue correcto, pasar al siguiente reto
     if result["success"]:
+    # === RESPUESTA CORRECTA ===
         next_challenge = get_next_challenge_for_player(player)
-        if next_challenge:
+        if player_response["level_up"]:
+            # Ha resuelto todos los retos de este nivel, sube de nivel o termina juego
+            if player.current_level > TOTAL_LEVELS:
+                # Juego completado
+                save_players_to_json()
+                player.current_challenge = None
+                response.update({
+                    "finished": True,
+                    "message": f"¡Misión completada con éxito! Resolviste {len(player.solved_challenges)} retos.",
+                })
+                return jsonify(response)
+            else:
+                # Nuevo nivel desbloqueado, asignar primer reto del siguiente nivel
+                player.current_challenge = next_challenge
+                response.update({
+                    "finished": False,
+                    "level_completed": True,
+                    "next_level": player.current_level,
+                    "challenge": next_challenge["challenge"],
+                    "hint": next_challenge["hint"],
+                    "message": f"¡Nivel {player.current_level} desbloqueado!"
+                })
+                return jsonify(response)
+        else:
+            # Aún quedan retos en este nivel, avanza al siguiente reto
             player.current_challenge = next_challenge
             response.update({
                 "finished": False,
                 "next_level": player.current_level,
                 "challenge": next_challenge["challenge"],
                 "hint": next_challenge["hint"],
-                "message": challenge["success_message"],
-                "attempts": player.attempts, 
-                "retos_resueltos": len(player.solved_challenges), 
+                "message": challenge["success_message"],  # mensaje del reto resuelto
+                "attempts": player.attempts,
+                "retos_resueltos": len(player.solved_challenges),
+            })
+    else:
+        # === RESPUESTA INCORRECTA ===
+        if player.attempts <= 0:
+            save_players_to_json()
+            reset_player(player)  # Reiniciar jugador si se acabaron los intentos
+            response.update({
+                "game_over": True,
+                "message": "GAME OVER"
             })
         else:
-            # Completó los retos del nivel actual
-            player.current_level += 1
+            response["message"] = challenge["error_message"]
 
-            if player.current_level > TOTAL_LEVELS:
-                save_players_to_json()
-                response.update({
-                    "finished": True,
-                    "message": f"¡Misión completada con éxito! Resolviste {len(player.solved_challenges)} retos.",
-                })
-                player.current_challenge = None
-                return jsonify(response)
-            else:
-                new_challenge = get_next_challenge_for_player(player)
-                player.current_challenge = new_challenge
-                response.update({
-                    "finished": False,
-                    "level_completed": true,
-                    "next_level": player.current_level,
-                    "challenge": new_challenge["challenge"],
-                    "hint": new_challenge["hint"],
-                    "message": f"¡Nivel {player.current_level} desbloqueado!"
-                })
-                return jsonify(response)
-    if player.attempts <= 0:
-        response.update({
-            "game_over": True,
-            "message": "GAME OVER"
-        })
-    else:
-        response["message"] = challenge["error_message"]
+    return jsonify(response)
 
     return jsonify(response)
 
@@ -140,8 +147,8 @@ def get_challenge():
     return jsonify({
         "level": player.current_level,
         "attempts": player.attempts,
-        "challenge": challenge["challenge"],
-        "corret_attempts":player.correct_attempts,
+        "challenge": challenge["challenge"] if challenge else "",
+        "correct_attempts": player.correct_attempts,
         "failed_attempts": player.incorrect_attempts,
         "hint": challenge["hint"]
     })
@@ -156,11 +163,14 @@ def reset():
     player = get_player(name)
     if player:
         reset_player(player)
+        # Consigue un reto inicial directamente (no usando get_challenge view!)
+        challenge = get_next_challenge_for_player(player)
+        player.current_challenge = challenge  # asegúrate que esto se asigne
         return jsonify({
             "success": True,
-            "message": f"🔁 El jugador {name} ha sido reiniciado.",
-            "challenge": get_challenge(1),
-            "hint": get_hint(1),
+            "message": f" El jugador {name} ha sido reiniciado.",
+            "challenge": challenge["challenge"] if challenge else "",
+            "hint": challenge["hint"] if challenge else "",
             "level": 1
         })
     else:

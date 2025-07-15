@@ -35,5 +35,32 @@
             12
         ],
         "current_challenge": null
+    },
+    {
+        "name": "ElmerGi",
+        "current_level": 1,
+        "score_per_level": [
+            -10,
+            -10,
+            -10,
+            -10,
+            -10,
+            -10
+        ],
+        "attempts": -3,
+        "correct_attempts": 0,
+        "incorrect_attempts": 6,
+        "solved_challenges": [],
+        "current_challenge": {
+            "id": 3,
+            "level": 1,
+            "title": "Seguridad inversa",
+            "challenge": "El firewall oculta su clave en orden inverso. La palabra original es 'proxy'. Guarda la palabra invertida en `clave_invertida`.",
+            "expected_output": "yxorp",
+            "hint": "Usa slicing con pasos negativos.",
+            "type": "string",
+            "success_message": "✅ Has desencriptado la entrada al servidor.",
+            "error_message": "❌ La inversión no coincide, intenta otra vez."
+        }
     }
 ]
