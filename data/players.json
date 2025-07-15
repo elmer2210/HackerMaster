@@ -35,5 +35,35 @@
             12
         ],
         "current_challenge": null
+    },
+    {
+        "name": "ElmerGi",
+        "current_level": 2,
+        "score_per_level": [
+            10,
+            10,
+            -10,
+            -10,
+            -10
+        ],
+        "attempts": 0,
+        "correct_attempts": 2,
+        "incorrect_attempts": 3,
+        "solved_challenges": [
+            1,
+            4,
+            8
+        ],
+        "current_challenge": {
+            "id": 5,
+            "level": 2,
+            "title": "Palabra espejo",
+            "challenge": "El mensaje cifrado es 'reconocer'. ¿Es un palíndromo? Guarda el resultado booleano en `es_valido`.",
+            "expected_output": "True",
+            "hint": "Compara la palabra consigo misma al revés.",
+            "type": "palindrome",
+            "success_message": "✅ La simetría reveló el acceso.",
+            "error_message": "❌ Revisa cómo invertir la palabra."
+        }
     }
 ]

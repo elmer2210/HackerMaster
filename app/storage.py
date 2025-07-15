@@ -20,8 +20,28 @@ CSV_FILE = os.path.join("data", "results.csv")
 
 #Guardamos los jugadores en el archivo JSON
 def save_players_to_json():
+        # 1. Cargar los datos ya guardados (si existen)
+    try:
+        with open(DATA_FILE, 'r', encoding='utf-8') as file:
+            existing_players = json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        existing_players = []
+
+    # 2. Convertir la lista existente en un dict {nombre: datos}
+    players_map = {p['name']: p for p in existing_players}
+
+    # 3. Obtener la lista nueva serializada
+    new_players = serialize_players()  # lista de dicts
+
+    # 4. Para cada jugador nuevo, insertar o reemplazar en el mapa
+    for p in new_players:
+        players_map[p['name']] = p
+
+    # 5. Volver a la lista y escribir el JSON combinado
+    merged_list = list(players_map.values())
     with open(DATA_FILE, 'w', encoding='utf-8') as file:
-        json.dump(serialize_players(), file, indent=4, ensure_ascii=False)
+        json.dump(merged_list, file, indent=4, ensure_ascii=False)
+
     print(f"Jugadores guardados en {DATA_FILE}")
 
 # Cargamos los jugadores desde el archivo JSON
