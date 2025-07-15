@@ -13,6 +13,28 @@ body {
   background-color: #111;
 }
 
+.otherview { /*Llamamos a una clase del html*/
+  border: 2px solid #33ff33;
+  padding: 20px;
+  max-width: 800px;
+  margin: auto;
+  background-color: #111;
+}
+
+.otherview h1, h2, a {
+  text-align: center;
+}
+
+.otherview ul, li>i{
+  font-size: 40px;
+  list-style: none;
+}
+
+.terminal ul{
+  list-style-type: none;
+}
+
+
 input, textarea, button { /*Llamamos a las etiquetas del html*/
   background-color: #111;
   color: #33ff33;
@@ -81,7 +103,7 @@ a:hover {
 }
 
 
-#overlay-nivel, #overlay-gameover  {
+#overlay-nivel, #overlay-gameover, #overlay-victory {
   position: fixed;
   top: 0;
   left: 0;
@@ -97,7 +119,7 @@ a:hover {
   flex-direction: column;
   text-align: center;
 }
-#matrix-nivel, #matrix-gameover  {
+#matrix-nivel, #matrix-gameover, #matrix-victory  {
   position: absolute;
   top: 0; left: 0;
   width: 100vw; height: 100vh;
@@ -105,7 +127,7 @@ a:hover {
   background: transparent;
   pointer-events: none;
 }
-#overlay-nivel > div, #overlay-gameover > div {
+#overlay-nivel > div, #overlay-gameover > div, #overlay-victory > div {
   z-index: 2;
   position: relative;
 }

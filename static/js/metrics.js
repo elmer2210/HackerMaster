@@ -15,7 +15,7 @@ function renderMetrics(data) {
         `<li><b>${p.name}</b> | Puntaje: <span style="color:lime">${p.score}</span> | Efectividad: <span style="color:orange">${p.accuracy}%</span></li>`
         ).join('')}
     </ol>
-    <h2 style="color:aqua">📈 Estadísticas por nivel</h2>
+    <h2 style="color:aqua"><i class="fa-solid fa-arrow-trend-up"></i> Estadísticas por nivel</h2>
     <table border="1" cellpadding="4" style="background:black;color:lime">
         <tr><th>Nivel</th><th>Puntaje promedio</th><th>Intentos</th></tr>
         ${data.level_stats.map(l =>

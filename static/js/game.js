@@ -87,7 +87,15 @@ function sendResponse() {
     document.getElementById("failed_attempts").innerHTML = `<i class="fa-solid fa-skull"></i> ${data.failed_attempts}`;
 
     if (data.finished) {
-      showVictory(data.message);
+      showVictoryScreen(data.stats || {
+        name: playerName,
+        current_level: data.next_level,
+        solved_challenges: [],
+        correct_attempts: data.correct_attempts,
+        incorrect_attempts: data.failed_attempts,
+        attempts: data.attempts,
+        score_per_level: [] // ajusta según backend
+      });
       return;
     }
     if (data.game_over) {
@@ -115,9 +123,7 @@ function sendResponse() {
         return;
       }
       // Si no subió de nivel, solo actualizar reto/pista/nivel
-      console.log("Respuesta correcta, cargando siguiente reto..."); 
       showLevelTransition();
-      console.log("Respuesta correcta, cargando siguiente reto...");
       setTimeout(() => {
         console.log("Cargando siguiente reto...");
         document.getElementById("respuesta").value = "";
@@ -246,6 +252,7 @@ function showGameOver() {
   startMatrixOverlay("matrix-gameover", "#e53935");
 
   setTimeout(() => {
+    reloadPlay(); // Reiniciar juego
     // Remover overlay y detener animación
     overlay.remove();
     stopMatrixOverlay();
@@ -254,22 +261,54 @@ function showGameOver() {
   
 }
 
-function showVictory(msg) {
-  document.getElementById("consola").style.display = "none";
+function showVictory(stats) {
+   // Borra overlays previos
+   // Elimina si ya hay uno viejo (por si acaso)
+  let oldOverlay = document.getElementById('overlay-victory');
+  if (oldOverlay) oldOverlay.remove();
+
+   // Crea overlay principal
   const overlay = document.createElement("div");
-  overlay.className = "terminal";
-  overlay.style = `
-    position:fixed;top:0;left:0;width:100vw;height:100vh;
-    background:rgba(0,0,0,0.95);color:lime;font-size:2.5em;z-index:9999;
-    display:flex;align-items:center;justify-content:center;flex-direction:column;
-  `;
+  overlay.id = "overlay-victory";
+
+
+ // Mensaje y estadísticas
   overlay.innerHTML = `
-    <h1><i class="fa-solid fa-trophy"></i> ¡MISIÓN COMPLETADA!</h1>
-    <p style="color:white;font-size:1.2em;white-space:pre-line;">${msg}</p>
-    <button style="font-size:1em;padding:0.5em 2em;border-radius:0.5em;margin-top:1em" onclick="window.location.href='/metrics'">Ver métricas</button>
-    <button style="font-size:1em;padding:0.5em 2em;border-radius:0.5em;margin-top:1em" onclick="location.reload()">Jugar de nuevo</button>
+   <canvas id="matrix-victory"></canvas>
+    <div style="max-width:85%;padding:2em;margin:1em;
+          text-align:center;display:flex;flex-direction:column;align-items:center;
+          font-size:25px;">
+      <h1><i class="fa-solid fa-trophy"></i> ¡MISIÓN COMPLETADA!</h1>
+      <p>
+        <i class="fa-regular fa-file-code"></i>
+        ¡Felicidades, Agente <b>${stats?.name || ""}</b>!<br>
+        Has completado todos los niveles.
+      </p>
+      <div>
+        <h2>Estadísticas finales</h2>
+        <ul style="list-style:none;text-align:left;font-size:0.8em;color:#C4FFC4;padding:0;">
+          <li><b>Nivel máximo:</b> ${stats?.current_level ?? "-"} </li>
+          <li><b>Retos resueltos:</b> ${stats?.solved_challenges?.length ?? 0}</li>
+          <li><b>Aciertos:</b> ${stats?.correct_attempts ?? 0}</li>
+          <li><b>Errores:</b> ${stats?.incorrect_attempts ?? 0}</li>
+          <li><b>Intentos totales:</b> ${stats?.attempts ?? 0}</li>
+          <li><b>Puntaje total:</b> ${stats?.score_per_level?.reduce((a,b)=>a+b,0) ?? 0}</li>
+        </ul>
+      </div>
+      <div style="display:flex;gap:1em;">
+        <button onclick="window.location.reload()" style="font-size:1em;padding:0.6em 2em;border-radius:0.5em;">
+          <i class="fa-solid fa-rotate-left"></i> Nueva partida
+        </button>
+        <button onclick="window.location.href='/metrics'" style="font-size:1em;padding:0.6em 2em;border-radius:0.5em;background:lime;color:black;">
+          <i class="fa-solid fa-chart-simple"></i> Ver estadísticas
+        </button>
+      </div>
+    </div>
   `;
+
   document.body.appendChild(overlay);
+
+  startMatrixOverlay("matrix-victory", "#00FF41");
 }
 
 function startMatrixOverlay(canvasId, color = "#0f0") {
@@ -307,7 +346,7 @@ function startMatrixOverlay(canvasId, color = "#0f0") {
   }
   // Limpia animaciones previas
   if (canvas.matrixInterval) clearInterval(canvas.matrixInterval);
-  canvas.matrixInterval = setInterval(draw, 33);
+  canvas.matrixInterval = setInterval(draw, 100);
 }
 
 function stopMatrixOverlay() {

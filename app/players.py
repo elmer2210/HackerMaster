@@ -43,7 +43,7 @@ def create_player(name: str) -> Player:
 def get_player(name: str) -> Optional[Player]:
     name = name.strip().lower()
     for player in players_list:
-        if player.name.lower() == name:
+        if player.name.lower()== name and player.attempts > 0:
             return player
     return None
 
